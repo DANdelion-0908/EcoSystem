@@ -64,8 +64,8 @@ def insert_instrumento(cursor: mariadb.Cursor, data: tuple):
     except mariadb.Error as e:
         print(f"Ocurrió un error al insertar al instrumento: {e}")
 
-def inser_melodia():
+def insert_melodia(cursor: mariadb.Cursor, data: tuple):
     pass
 
-def assign_instrumento_melodia():
+def assign_instrumento_melodia(cursor: mariadb.Cursor, data: dict):
     pass
