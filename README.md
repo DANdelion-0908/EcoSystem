@@ -1,6 +1,7 @@
 # Sistema de Gestión "Ecos del Valle"
 
 ## Descripción
+
 Programa que busca mejorar la gestión del grupo marimbístico Ecos del Valle.
 
 ### To-Do

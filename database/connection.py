@@ -67,5 +67,5 @@ def insert_instrumento(cursor: mariadb.Cursor, data: tuple):
 def insert_melodia(cursor: mariadb.Cursor, data: tuple):
     pass
 
-def assign_instrumento_melodia(cursor: mariadb.Cursor, data: dict):
+def assign_instrumento_melodia(cursor: mariadb.Cursor, data: tuple):
     pass
