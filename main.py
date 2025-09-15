@@ -1,13 +1,14 @@
 from database.connection import get_connection
-from database.connection import insert_integrante
-from database.connection import insert_instrumento
-from database.connection import insert_melodia
-from database.connection import assign_instrumento_melodia
+from database.connection import insert_member
+from database.connection import insert_instrument
+from database.connection import insert_melody
+from database.connection import assign_instrument_member_melody
 from database.create_database import create_database
+import mariadb
 
 def main():
     while True:
-        cursor = get_connection()
+        cursor: mariadb.Cursor = get_connection()
 
         print("############################################")
         print("### Sistema de Gestión de Ecos del Valle ###")
@@ -20,44 +21,44 @@ def main():
         print("5. Asignar instrumento y melodía a un integrante")
         print("6. Salir\n")
 
-        choice = input("Selecciona una opción (1-6): ")
+        choice: str = input("Selecciona una opción (1-6): ")
 
-        if choice == '1':
+        if choice == '1':           # Extraño los switch case...
             create_database()
             break
 
         elif choice == '2':
-            nombre = input("Ingrese el nombre del integrante: ")
-            rol = input("Ingrese el rol del integrante: ")
-            data = (nombre, rol)
-            insert_integrante(cursor, data)
+            name: str = input("Ingrese el nombre del integrante: ")
+            role: str = input("Ingrese el rol del integrante: ")
+            member_data: tuple[str, str] = (name, role)
+            insert_member(cursor, member_data)
             break
         
         elif choice == '3':
-            nombre = input("Ingrese el nombre del instrumento: ")
-            tipo = input("Ingrese el tipo del instrumento: ")
-            data = (nombre, tipo)
-            insert_instrumento(cursor, data)
+            name: str = input("Ingrese el nombre del instrumento: ")
+            instrument_type: str = input("Ingrese el tipo del instrumento: ")
+            instrument_data: tuple[str, str] = (name, instrument_type)
+            insert_instrument(cursor, instrument_data)
             break
 
         elif choice == '4':
-            titulo = input("Ingrese el título de la melodía: ")
-            genero = input("Ingrese el género de la melodía: ")
-            data = (titulo, genero)
-            insert_melodia(cursor, data)
+            title: str = input("Ingrese el título de la melodía: ")
+            genre: str = input("Ingrese el género de la melodía: ")
+            melody_data: tuple[str, str] = (title, genre)
+            insert_melody(cursor, melody_data)
             break
 
         elif choice == '5':
-            integrante_id = input("Ingrese el ID del integrante: ")
-            instrumento_id = input("Ingrese el ID del instrumento: ")
-            melodia_id = input("Ingrese el ID de la melodía: ")
-            puesto = input("Ingrese el puesto del integrante en la melodía: ")
-            data = (integrante_id, instrumento_id, melodia_id, puesto)
-            assign_instrumento_melodia(cursor, data)
+            member_id: str = input("Ingrese el ID del integrante: ")
+            instrument_id: str = input("Ingrese el ID del instrumento: ")
+            melody_id: str = input("Ingrese el ID de la melodía: ")
+            position: str = input("Ingrese el puesto del integrante en la melodía: ")
+            assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, melody_id, position)
+            assign_instrument_member_melody(cursor, assignment_data)
             break
 
         elif choice == '6':
-            cursor.close()     
+            cursor.close()
             print("Conexión cerrada.\n")
             print("Saliendo del sistema...")
             break
