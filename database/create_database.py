@@ -5,33 +5,33 @@ def create_database():
     cur = get_connection()
     cur.execute("USE ecos;")
 
-    cur.execute("""CREATE TABLE IF NOT EXISTS integrante(
+    cur.execute("""CREATE TABLE IF NOT EXISTS member(
                     id INT PRIMARY KEY AUTO_INCREMENT,
-                    nombre VARCHAR(100) NOT NULL,
-                    rol VARCHAR(100) NOT NULL);"""
+                    name VARCHAR(100) NOT NULL,
+                    main_position VARCHAR(100) NOT NULL,
+                    role VARCHAR(100) NOT NULL);"""
                 )
 
-    cur.execute("""CREATE TABLE IF NOT EXISTS instrumento(
+    cur.execute("""CREATE TABLE IF NOT EXISTS instrument(
                     id INT PRIMARY KEY AUTO_INCREMENT,
-                    nombre VARCHAR(100) NOT NULL,
-                    tipo VARCHAR(100) NOT NULL);"""
+                    name VARCHAR(100) NOT NULL,
+                    family VARCHAR(100) NOT NULL);"""
                 )
 
-    cur.execute("""CREATE TABLE IF NOT EXISTS melodia(
+    cur.execute("""CREATE TABLE IF NOT EXISTS melody(
                 id INT PRIMARY KEY AUTO_INCREMENT,
-                titulo VARCHAR(100) NOT NULL,
-                genero VARCHAR(100) NOT NULL);"""
+                name VARCHAR(100) NOT NULL,
+                genre VARCHAR(100) NOT NULL);"""
             )
 
-    cur.execute("""CREATE TABLE IF NOT EXISTS integrante_instrumento_melodia(
-                integrante_id INT,
-                instrumento_id INT,
-                melodia_id INT,
-                puesto VARCHAR(100) NOT NULL,
-                FOREIGN KEY (integrante_id) REFERENCES integrante(id),
-                FOREIGN KEY (instrumento_id) REFERENCES instrumento(id),
-                FOREIGN KEY (melodia_id) REFERENCES melodia(id));"""
+    cur.execute("""CREATE TABLE IF NOT EXISTS member_instrument_melody(
+                member_id INT,
+                instrument_id INT,
+                melody_id INT,
+                member_positions VARCHAR(100) NOT NULL,
+                FOREIGN KEY (member_id) REFERENCES member(id),
+                FOREIGN KEY (instrument_id) REFERENCES instrument(id),
+                FOREIGN KEY (melody_id) REFERENCES melody(id));"""
             )
-    
-    print("Se han creado la base de datos 'ecos' y las tablas 'integrante', 'instrumento', 'melodia' e 'integrante_instrumento_melodia' correctamente.")
-    
+
+    print("Se han creado las tablas 'member', 'instrument', 'melody' y 'member_instrument_melody' correctamente\n")
