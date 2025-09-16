@@ -32,7 +32,7 @@ def get_connection() -> mariadb.Cursor:
     return cur
 
 def insert_member(cursor: mariadb.Cursor, data: tuple) -> None:
-    """Insertar datos en la tabla integrante.
+    """Insertar datos en la tabla member.
     
     Args:
         cursor (mariadb.Cursor): Cursor de la base de datos.
@@ -43,7 +43,7 @@ def insert_member(cursor: mariadb.Cursor, data: tuple) -> None:
     """
     try:
         cursor.execute(
-            "INSERT INTO integrante (nombre, rol) VALUES (?, ?)", (data[0], data[1])
+            "INSERT INTO member (name, main_position, role) VALUES (?, ?, ?)", (data[0], data[1], data[2])
         )
     
         print(f"Integrante {data[0]} agregado correctamente.\n")
@@ -52,7 +52,7 @@ def insert_member(cursor: mariadb.Cursor, data: tuple) -> None:
         print(f"Ocurrió un error al insertar al integrante: {e}\n")
 
 def insert_instrument(cursor: mariadb.Cursor, data: tuple) -> None:
-    """Insertar datos en la tabla instrumento.
+    """Insertar datos en la tabla instrument.
 
     Args:
         cursor (mariadb.Cursor): Cursor de la base de datos.
@@ -64,7 +64,7 @@ def insert_instrument(cursor: mariadb.Cursor, data: tuple) -> None:
 
     try:
         cursor.execute(
-            "INSERT INTO instrumento (nombre, tipo) VALUES (?,?)", (data[0], data[1])
+            "INSERT INTO instrument (name, family) VALUES (?,?)", (data[0], data[1])
         )
 
         print(f"Instrumento {data[0]} agregado correctamente.\n")
@@ -73,7 +73,7 @@ def insert_instrument(cursor: mariadb.Cursor, data: tuple) -> None:
         print(f"Ocurrió un error al insertar al instrumento: {e}\n")
 
 def insert_melody(cursor: mariadb.Cursor, data: tuple) -> None:
-    """Insertar datos en la tabla melodia.
+    """Insertar datos en la tabla melody.
 
     Args:
         cursor (mariadb.Cursor): Cursor de la base de datos.
@@ -85,7 +85,7 @@ def insert_melody(cursor: mariadb.Cursor, data: tuple) -> None:
 
     try:
         cursor.execute(
-            "INSERT INTO melodia (titulo, genero) VALUES (?,?)", (data[0], data[1])
+            "INSERT INTO melody (name, genre) VALUES (?,?)", (data[0], data[1])
         )
 
         print(f"Melodía {data[0]} agregada correctamente.\n")
@@ -105,7 +105,7 @@ def assign_instrument_member_melody(cursor: mariadb.Cursor, data: tuple) -> None
     """
     try:
         cursor.execute(
-            "INSERT INTO integrante_instrumento_melodia (integrante_id, instrumento_id, melodia_id, puesto) VALUES (?, ?, ?, ?)",  (data[0], data[1], data[2], data[3])
+            "INSERT INTO member_instrument_melody (member_id, instrument_id, melody_id, member_positions) VALUES (?, ?, ?, ?)",  (data[0], data[1], data[2], data[3])
         )
 
         print(f"Asignación de instrumento {data[1]} y melodía {data[2]} a integrante {data[0]} con el puesto {data[3]} realizada correctamente.\n")
@@ -123,7 +123,7 @@ def get_all_members(cursor: mariadb.Cursor) -> list[tuple]:
         list[tuple]: Lista de tuplas con los datos de los integrantes.
     """
     try:
-        cursor.execute("SELECT * FROM integrante")
+        cursor.execute("SELECT * FROM member")
         members: list[tuple] = cursor.fetchall()
         return members
 
@@ -141,7 +141,7 @@ def get_all_instruments(cursor: mariadb.Cursor) -> list[tuple]:
         list[tuple]: Lista de tuplas con los datos de los instrumentos.
     """
     try:
-        cursor.execute("SELECT * FROM instrumento")
+        cursor.execute("SELECT * FROM instrument")
         instruments: list[tuple] = cursor.fetchall()
         return instruments
 
@@ -159,7 +159,7 @@ def get_all_melodies(cursor: mariadb.Cursor) -> list[tuple]:
         list[tuple]: Lista de tuplas con los datos de las melodías.
     """
     try:
-        cursor.execute("SELECT * FROM melodia")
+        cursor.execute("SELECT * FROM melody")
         melodies: list[tuple] = cursor.fetchall()
         return melodies
 
@@ -172,7 +172,8 @@ def get_all_melodies(cursor: mariadb.Cursor) -> list[tuple]:
         return []
 
 def get_members_by_melody(cursor: mariadb.Cursor, melody_id: str) -> dict:
-    """Obtener todos los miembros que participan en una melodía específica.
+    """Obtener todos los miembros y su relación con una determinada canción.
+    Si participan, se muestra su puesto, de lo contrario, None.
 
     Args:
         cursor (mariadb.Cursor): Cursor de la base de datos.
@@ -183,25 +184,28 @@ def get_members_by_melody(cursor: mariadb.Cursor, melody_id: str) -> dict:
     """
     try:
         cursor.execute(f"""
-            SELECT i.id AS integrante_id,
-            i.nombre AS integrante, 
-            m.titulo AS melodia, 
-            ins.nombre AS instrumento, 
-            iim.puesto FROM integrante_instrumento_melodia iim 
-            JOIN integrante i ON iim.integrante_id = i.id JOIN 
-            instrumento ins ON iim.instrumento_id = ins.id JOIN 
-            melodia m ON iim.melodia_id = m.id 
-            WHERE m.id = ?;
+            SELECT m.id AS member_id,
+                m.name AS member, 
+                m.main_position AS main,
+                mel.name AS melody, 
+                ins.name AS instrument, 
+                mim.member_positions 
+            FROM member_instrument_melody mim 
+            JOIN member m ON mim.member_id = m.id JOIN 
+            instrument ins ON mim.instrument_id = ins.id JOIN 
+            melody mel ON mim.melody_id = mel.id 
+            WHERE mel.id = ?;
         """, (melody_id,))
 
         relations: dict = {}
 
-        for (intregrante_id, integrante, melodia, instrumento, puesto) in cursor:
-            relations[intregrante_id] = {
-                "integrante": integrante,
-                "melodia": melodia,
-                "instrumento": instrumento,
-                "puesto": puesto
+        for (member_id, member, main, melody, instrument, member_positions) in cursor.fetchall():
+            relations[member_id] = {
+                "member": member,
+                "melody": melody,
+                "instrument": instrument,
+                "main": main,
+                "member_positions": member_positions
             }
         
         return relations

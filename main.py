@@ -1,42 +1,7 @@
 from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody
 from database.create_database import create_database
+from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position
 import mariadb, os
-
-MANDATORY_POSITIONS = [
-    "Piccolo", 
-    "Tiple", 
-    "Centro", 
-    "Bajo", 
-    "Piccolo segundo", 
-    "Tiple segundo", 
-    "Bajo tenor",
-    "Batería"]
-
-def check_mandatory_positions_filled(melody_id: str, members_in_melody: dict) -> bool:
-    """Verifica si todos los puestos obligatorios han sido llenados para una melodía específica.
-
-    Args:
-        melody_id (str): ID de la melodía a verificar.
-        members_in_melody (dict): Miembros asignados a la melodía.
-
-    Returns:
-        bool: True si todos los puestos obligatorios están llenos, False en caso contrario.
-    """
-    positions_filled = {position: False for position in MANDATORY_POSITIONS}
-
-    for member_details in members_in_melody.values():
-        if member_details['puesto'].capitalize() in MANDATORY_POSITIONS:
-            positions_filled[member_details['puesto'].capitalize()] = True
-
-        if all(positions_filled.values()):
-            print(f"\nTodos los puestos obligatorios para la melodía con ID {melody_id} han sido llenados.\n")
-            return True
-
-    for position, filled in positions_filled.items():
-        if not filled:
-            print(f"No se ha llenado el puesto '{position}' para la melodía {members_in_melody[1]['melodia']}.")
-        
-    return False
 
 def main():
     cursor: mariadb.Cursor = get_connection()
@@ -62,36 +27,37 @@ def main():
 
         elif choice == '2':
             name: str = input("Ingrese el nombre del integrante: ")
+            main_position: str = input("Ingrese el puesto principal del integrante: ")
             role: str = input("Ingrese el rol del integrante: ")
             print()
 
-            member_data: tuple[str, str] = (name, role)
+            member_data: tuple[str, str, str] = (name, main_position, role)
             insert_member(cursor, member_data)
         
         elif choice == '3':
             name: str = input("Ingrese el nombre del instrumento: ")
-            instrument_type: str = input("Ingrese el tipo del instrumento: ")
+            family: str = input("Ingrese la familia del instrumento: ")
             print()
 
-            instrument_data: tuple[str, str] = (name, instrument_type)
+            instrument_data: tuple[str, str] = (name, family)
             insert_instrument(cursor, instrument_data)
 
         elif choice == '4':
-            title: str = input("Ingrese el título de la melodía: ")
+            name: str = input("Ingrese el título de la melodía: ")
             genre: str = input("Ingrese el género de la melodía: ")
             print()
 
-            melody_data: tuple[str, str] = (title, genre)
+            melody_data: tuple[str, str] = (name, genre)
             insert_melody(cursor, melody_data)
 
         elif choice == '5':
             member_id: str = input("Ingrese el ID del integrante: ")
             instrument_id: str = input("Ingrese el ID del instrumento: ")
             melody_id: str = input("Ingrese el ID de la melodía: ")
-            position: str = input("Ingrese el puesto del integrante en la melodía: ")
+            member_position: str = input("Ingrese el puesto del integrante en la melodía: ")
             print()
 
-            assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, melody_id, position)
+            assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, melody_id, member_position)
             assign_instrument_member_melody(cursor, assignment_data)
 
         elif choice == '6':
@@ -119,7 +85,7 @@ def main():
                     print("\nLista de Integrantes:")
                     
                     for member in members:
-                        print(f"ID: {member[0]}, Nombre: {member[1]}, Rol: {member[2]}")
+                        print(f"ID: {member[0]}, Nombre: {member[1]}, Puesto Principal: {member[2]}, Rol: {member[3]}")
                     print()
 
                 elif sub_choice == "2":
@@ -131,7 +97,7 @@ def main():
                     print("\nLista de Instrumentos:")
 
                     for instrument in instruments:
-                        print(f"ID: {instrument[0]}, Nombre: {instrument[1]}, Tipo: {instrument[2]}")
+                        print(f"ID: {instrument[0]}, Nombre: {instrument[1]}, Familia: {instrument[2]}")
                     print()
 
                 elif sub_choice == "3":
@@ -143,24 +109,44 @@ def main():
                     print("\nLista de Melodías:")
 
                     for melody in melodies:
-                        print(f"ID: {melody[0]}, Título: {melody[1]}, Género: {melody[2]}")
+                        print(f"ID: {melody[0]}, Nombre: {melody[1]}, Género: {melody[2]}")
                     print()
 
                 elif sub_choice == "4":
                     melody_id: str = input("Ingrese el ID de la melodía: ")
                     members_in_melody = get_members_by_melody(cursor, melody_id)
+                    all_members = get_all_members(cursor)
 
                     if not members_in_melody:
                         print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
 
                     else:
-                        print(f"\nIntegrantes que participan en la melodía {members_in_melody[1]['melodia']}:")
+                        try:
+                            print(f"\nIntegrantes que participan en la melodía {members_in_melody[1]['melody']}:")
 
-                        for member_id, dmember_details in members_in_melody.items():
-                            print(f"ID Integrante: {member_id}, Nombre: {dmember_details['integrante']}, Instrumento: {dmember_details['instrumento']}, Puesto: {dmember_details['puesto']}")
-                        print()
+                            for member_id, dmember_details in members_in_melody.items():
+                                print(f"ID Integrante: {member_id}, Nombre: {dmember_details['member']}, Instrumento: {dmember_details['instrument']}, Puesto: {dmember_details['member_positions']}")
+                            print()
 
-                        check_mandatory_positions_filled(melody_id, members_in_melody)
+                            for member in all_members:
+                                if member[0] not in members_in_melody:
+                                    members_in_melody[member[0]] = {"member": member[1], "main": member[2], "melody": None, "instrument": None, "member_positions": None}
+
+                            filled_positions = check_mandatory_positions_filled(members_in_melody)
+                            recommendations = recommend_member_for_position(members_in_melody, filled_positions)
+
+                            for position, assigned_members in recommendations.items():
+                                if assigned_members:
+                                    print(f"{position}: {', '.join(assigned_members)}")
+                                else:
+                                    print(f"{position}: Ninguno")
+
+                        except KeyError:
+                            print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
+
+                elif sub_choice == "5":
+                    print()
+                    break
 
         elif choice == '7':
             cursor.close()
