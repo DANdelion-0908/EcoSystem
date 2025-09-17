@@ -1,6 +1,6 @@
 from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations
 from database.create_database import create_database
-from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position
+from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position, assign_random_members
 import mariadb, os
 
 def main():
@@ -169,10 +169,19 @@ def main():
 
                             filled_positions = check_mandatory_positions_filled(members_in_melody)
                             recommendations = recommend_member_for_position(members_in_melody, filled_positions)
+                            random_recommendations = assign_random_members(members_in_melody)
 
+                            print("\nRecomendaciones para cubrir puestos obligatorios:\n")
                             for position, assigned_members in recommendations.items():
                                 if assigned_members:
                                     print(f"{position}: {', '.join(assigned_members)}")
+                                else:
+                                    print(f"{position}: Ninguno")
+
+                            print("\nAsignaciones aleatorias (For fun):\n")
+                            for position, assigned_members in random_recommendations.items():
+                                if assigned_members:
+                                    print(f"{position}: {assigned_members}")
                                 else:
                                     print(f"{position}: Ninguno")
 

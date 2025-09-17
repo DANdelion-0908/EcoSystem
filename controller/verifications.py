@@ -1,3 +1,5 @@
+import random
+
 MANDATORY_POSITIONS = [
     "Piccolo",
     "Tiple",
@@ -7,6 +9,13 @@ MANDATORY_POSITIONS = [
     "Tiple segundo", 
     "Bajo tenor",
     "Batería"]
+
+SIMILAR_POSITIONS = {
+    "Primeras": ["Piccolo", "Tiple", "Bajo tenor"],
+    "Segundas": ["Piccolo segundo", "Tiple segundo"],
+    "Armonía": ["Centro", "Bajo"],
+    "Percusión": ["Batería"]
+}
 
 # Datos de prueba
 # Llena los puestos obligatorios y algunos substitutos
@@ -20,6 +29,39 @@ test = {"1": {"member": "Dan", "melody": "Verónica", "instrument": "Marimba 4/4
         "8": {"member": "Christian", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Batería", "member_positions": None},
         "9": {"member": "Jefferson", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple segundo", "member_positions": None},
         "10": {"member": "Daniela", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple", "member_positions": None}}
+
+def assign_random_members(available_members: dict) -> dict:
+    """Asigna de manera completamente aleatoria a los miembros del grupo (For fun xdd).
+
+    Args:
+        available_members (dict): Todos los miembros disponibles.
+
+    Returns:
+        dict: Diccionario con las asignaciones aleatorias.
+    """
+    recommendations: dict = {position: "" for position in MANDATORY_POSITIONS}
+
+    for member in recommendations.values():
+        random_mf: str = ""
+
+        while True:
+            random_mf = random.choice(list(available_members.keys()))
+
+            if available_members[random_mf]["member"] not in list(recommendations.values()):
+                break
+
+        position = random.choice(MANDATORY_POSITIONS)
+
+        if not recommendations[position]:
+            recommendations[position] = available_members[random_mf]["member"]
+
+        else:
+            for key, empty in recommendations.items():
+                if not empty:
+                    recommendations[key] = available_members[random_mf]["member"]
+                    break
+
+    return recommendations
 
 def recommend_member_for_position(available_members: dict, filled_positions: dict) -> dict:
     """Recomienda un integrante disponible para un puesto obligatorio en una melodía específica.
@@ -41,15 +83,15 @@ def recommend_member_for_position(available_members: dict, filled_positions: dic
         elif details["member"] not in recommendations[details["main"]] and len(recommendations[details["main"]]) >= 1:
             print(f"El puesto {details["main"]} ya posee varias personas. Buscando otro...")
             
-            for key, value in recommendations.items():
+            for position, value in recommendations.items():
                 if not value:
-                    print(f"- Se sugiere agregar a {details["member"]} al puesto {key}\n")
-                    recommendations[key].append(details["member"])
+                    print(f"- Se sugiere agregar a {details["member"]} al puesto {position}\n")
+                    recommendations[position].append(details["member"])
                     break
 
                 elif len(value) == 1:
-                    print(f"- Se sugiere agregar a {details["member"]} al puesto {key}\n")
-                    recommendations[key].append(details["member"])
+                    print(f"- Se sugiere agregar a {details["member"]} al puesto {position}\n")
+                    recommendations[position].append(details["member"])
                     break
 
                 else:
