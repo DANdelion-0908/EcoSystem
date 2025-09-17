@@ -213,3 +213,19 @@ def get_members_by_melody(cursor: mariadb.Cursor, melody_id: str) -> dict:
     except mariadb.Error as e:
         print(f"Ocurrió un error al obtener las relaciones: {e}\n")
         return {}
+
+def delete_relations(cursor: mariadb.Cursor) -> None:
+    """Eliminar todas las relaciones de la tabla member_instrument_melody.
+
+    Args:
+        cursor (mariadb.Cursor): Cursor de la base de datos.
+
+    Returns:
+        None
+    """
+    try:
+        cursor.execute("TRUNCATE TABLE member_instrument_melody")
+        print("Todas las relaciones eliminadas correctamente.\n")
+
+    except mariadb.Error as e:
+        print(f"Ocurrió un error al eliminar las relaciones: {e}\n")
