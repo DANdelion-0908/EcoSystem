@@ -1,4 +1,4 @@
-from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody
+from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations
 from database.create_database import create_database
 from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position
 import mariadb, os
@@ -12,55 +12,90 @@ def main():
         print("### Sistema de Gestión de Ecos del Valle ###")
         print("############################################")
 
-        print("\n1. Crear base de datos")
-        print("2. Ingresar un integrante")
-        print("3. Ingresar un instrumento")
-        print("4. Ingresar una melodía")
-        print("5. Asignar instrumento y melodía a un integrante")
-        print("6. Opciones de consulta")
-        print("7. Salir\n")
+        print("\n1. Opciones de administración")
+        print("2. Opciones de inserción")
+        print("3. Opciones de consulta")
+        print("4. Salir\n")
 
-        choice: str = input("Selecciona una opción (1-7): ")
+        choice: str = input("Selecciona una opción (1-4): ")
 
         if choice == '1':           # Extraño los switch case...
-            create_database()
+
+            while True:
+
+                print("##################################")
+                print("### Opciones de administración ###")
+                print("##################################\n")
+
+                print("\n1. Crear la base de datos")
+                print("2. Eliminar relaciones de integrantes, instrumentos y melodías")
+                print("3. Volver al menú principal\n")
+
+                admin_choice: str = input("Selecciona una opción (1-3): ")
+
+                if admin_choice == '1':
+                    create_database()
+
+                elif admin_choice == '2':
+                    delete_relations(cursor)
+
+                elif admin_choice == '3':
+                    break
 
         elif choice == '2':
-            name: str = input("Ingrese el nombre del integrante: ")
-            main_position: str = input("Ingrese el puesto principal del integrante: ")
-            role: str = input("Ingrese el rol del integrante: ")
-            print()
+            while True:
 
-            member_data: tuple[str, str, str] = (name, main_position, role)
-            insert_member(cursor, member_data)
-        
+                print("#############################")
+                print("### Opciones de inserción ###")
+                print("#############################\n")
+
+                print("\n1. Insertar un nuevo integrante")
+                print("2. Insertar un nuevo instrumento")
+                print("3. Insertar una nueva melodía")
+                print("4. Asignar un instrumento y una melodía a un integrante")
+                print("5. Volver al menú principal\n")
+
+                sub_choice: str = input("Selecciona una opción (1-5): ")
+
+                if sub_choice == '1':
+                    name: str = input("Ingrese el nombre del integrante: ")
+                    main_position: str = input("Ingrese el puesto principal del integrante: ")
+                    role: str = input("Ingrese el rol del integrante: ")
+                    print()
+
+                    member_data: tuple[str, str, str] = (name, main_position, role)
+                    insert_member(cursor, member_data)
+
+                elif sub_choice == '2':
+                    name: str = input("Ingrese el nombre del instrumento: ")
+                    family: str = input("Ingrese la familia del instrumento: ")
+                    print()
+
+                    instrument_data: tuple[str, str] = (name, family)
+                    insert_instrument(cursor, instrument_data)
+
+                elif sub_choice == '3':        
+                    name: str = input("Ingrese el título de la melodía: ")
+                    genre: str = input("Ingrese el género de la melodía: ")
+                    print()
+
+                    melody_data: tuple[str, str] = (name, genre)
+                    insert_melody(cursor, melody_data)
+
+                elif sub_choice == '4':
+                    member_id: str = input("Ingrese el ID del integrante: ")
+                    instrument_id: str = input("Ingrese el ID del instrumento: ")
+                    melody_id: str = input("Ingrese el ID de la melodía: ")
+                    member_position: str = input("Ingrese el puesto del integrante en la melodía: ")
+                    print()
+
+                    assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, melody_id, member_position)
+                    assign_instrument_member_melody(cursor, assignment_data)
+
+                elif sub_choice == '5':
+                    break
+
         elif choice == '3':
-            name: str = input("Ingrese el nombre del instrumento: ")
-            family: str = input("Ingrese la familia del instrumento: ")
-            print()
-
-            instrument_data: tuple[str, str] = (name, family)
-            insert_instrument(cursor, instrument_data)
-
-        elif choice == '4':
-            name: str = input("Ingrese el título de la melodía: ")
-            genre: str = input("Ingrese el género de la melodía: ")
-            print()
-
-            melody_data: tuple[str, str] = (name, genre)
-            insert_melody(cursor, melody_data)
-
-        elif choice == '5':
-            member_id: str = input("Ingrese el ID del integrante: ")
-            instrument_id: str = input("Ingrese el ID del instrumento: ")
-            melody_id: str = input("Ingrese el ID de la melodía: ")
-            member_position: str = input("Ingrese el puesto del integrante en la melodía: ")
-            print()
-
-            assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, melody_id, member_position)
-            assign_instrument_member_melody(cursor, assignment_data)
-
-        elif choice == '6':
 
             while True:
 
@@ -148,7 +183,7 @@ def main():
                     print()
                     break
 
-        elif choice == '7':
+        elif choice == '4':
             cursor.close()
             print("Conexión cerrada.")
             print("Saliendo del sistema...")
