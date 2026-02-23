@@ -73,30 +73,27 @@ def recommend_member_for_position(available_members: dict, filled_positions: dic
     Returns:
         dict: Diccionario con la recomendación del integrante para el puesto obligatorio.
     """
-    recommendations = filled_positions.copy()
+    recommendations: dict = filled_positions.copy()
+    pendingMembers: list = []
 
     for details in available_members.values():
-        if details["member"] not in recommendations[details["main"]] and len(recommendations[details["main"]]) <= 1:
+        if details["member"] in [member for members in filled_positions.values() for member in members]:
+            continue
+
+        if details["member"] not in recommendations[details["main"]] and len(recommendations[details["main"]]) == 0:
             print(f"- Se sugiere agregar a {details["member"]} al puesto {details["main"]}\n")
             recommendations[details["main"]].append(details["member"])
 
         elif details["member"] not in recommendations[details["main"]] and len(recommendations[details["main"]]) >= 1:
-            print(f"El puesto {details["main"]} ya posee varias personas. Buscando otro...")
+            print(f"El puesto {details["main"]} ya posee varias personas. Se asignará a {details["member"]} un puesto vacío al final.\n")
+            pendingMembers.append(details)
             
-            for position, value in recommendations.items():
-                if not value:
-                    print(f"- Se sugiere agregar a {details["member"]} al puesto {position}\n")
-                    recommendations[position].append(details["member"])
-                    break
-
-                elif len(value) == 1:
-                    print(f"- Se sugiere agregar a {details["member"]} al puesto {position}\n")
-                    recommendations[position].append(details["member"])
-                    break
-
-                else:
-                    print(f"Todos los puestos poseen al menos un substituto")
-                    break
+    for details in pendingMembers:
+        for position, value in recommendations.items():
+            if not value:
+                print(f"- Se sugiere agregar a {details["member"]} al puesto {position}\n")
+                recommendations[position].append(details["member"])
+                break
 
     return recommendations
 

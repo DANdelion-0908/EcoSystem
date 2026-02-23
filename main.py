@@ -152,41 +152,41 @@ def main():
                     members_in_melody = get_members_by_melody(cursor, melody_id)
                     all_members = get_all_members(cursor)
 
-                    if not members_in_melody:
-                        print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
+                    try:
+                        if not members_in_melody:
+                            print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
 
-                    else:
-                        try:
+                        else:
                             print(f"\nIntegrantes que participan en la melodía {members_in_melody[1]['melody']}:")
 
                             for member_id, dmember_details in members_in_melody.items():
                                 print(f"ID Integrante: {member_id}, Nombre: {dmember_details['member']}, Instrumento: {dmember_details['instrument']}, Puesto: {dmember_details['member_positions']}")
                             print()
 
-                            for member in all_members:
-                                if member[0] not in members_in_melody:
-                                    members_in_melody[member[0]] = {"member": member[1], "main": member[2], "melody": None, "instrument": None, "member_positions": None}
+                        for member in all_members:
+                            if member[0] not in members_in_melody:
+                                members_in_melody[member[0]] = {"member": member[1], "main": member[2], "melody": None, "instrument": None, "member_positions": None}
 
-                            filled_positions = check_mandatory_positions_filled(members_in_melody)
-                            recommendations = recommend_member_for_position(members_in_melody, filled_positions)
-                            random_recommendations = assign_random_members(members_in_melody)
+                        filled_positions = check_mandatory_positions_filled(members_in_melody)
+                        recommendations = recommend_member_for_position(members_in_melody, filled_positions)
+                        random_recommendations = assign_random_members(members_in_melody)
 
-                            print("\nRecomendaciones para cubrir puestos obligatorios:\n")
-                            for position, assigned_members in recommendations.items():
-                                if assigned_members:
-                                    print(f"{position}: {', '.join(assigned_members)}")
-                                else:
-                                    print(f"{position}: Ninguno")
+                        print("\nRecomendaciones para cubrir puestos obligatorios:\n")
+                        for position, assigned_members in recommendations.items():
+                            if assigned_members:
+                                print(f"{position}: {', '.join(assigned_members)}")
+                            else:
+                                print(f"{position}: Ninguno")
 
-                            print("\nAsignaciones aleatorias (For fun):\n")
-                            for position, assigned_members in random_recommendations.items():
-                                if assigned_members:
-                                    print(f"{position}: {assigned_members}")
-                                else:
-                                    print(f"{position}: Ninguno")
+                        print("\nAsignaciones aleatorias (For fun):\n")
+                        for position, assigned_members in random_recommendations.items():
+                            if assigned_members:
+                                print(f"{position}: {assigned_members}")
+                            else:
+                                print(f"{position}: Ninguno")
 
-                        except KeyError:
-                            print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
+                    except KeyError:
+                        print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
 
                 elif sub_choice == "5":
                     print()

@@ -3,7 +3,7 @@ from database.connection import get_connection
 def create_database():
     """Crear la base de datos de Ecos del Valle."""
     cur = get_connection()
-    cur.execute("USE ecos;")
+    cur.execute("USE ecosystem;")
 
     cur.execute("""CREATE TABLE IF NOT EXISTS member(
                     id INT PRIMARY KEY AUTO_INCREMENT,
