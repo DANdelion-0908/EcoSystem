@@ -19,16 +19,16 @@ SIMILAR_POSITIONS = {
 
 # Datos de prueba
 # Llena los puestos obligatorios y algunos substitutos
-test = {"1": {"member": "Dan", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple", "member_positions": None}, 
-        "2": {"member": "André", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Piccolo", "member_positions": None},
-        "3": {"member": "Tiffany", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Centro", "member_positions": None},
-        "4": {"member": "Pallais", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Bajo", "member_positions": None},
-        "5": {"member": "Kilary", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Piccolo segundo", "member_positions": None},
-        "6": {"member": "Lourdes", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple segundo", "member_positions": None},
-        "7": {"member": "Minely", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Bajo tenor", "member_positions": None},
-        "8": {"member": "Christian", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Batería", "member_positions": None},
-        "9": {"member": "Jefferson", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple segundo", "member_positions": None},
-        "10": {"member": "Daniela", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple", "member_positions": None}}
+test = {"1": {"member": "Dan", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple"}, 
+        "2": {"member": "André", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Piccolo"},
+        "3": {"member": "Tiffany", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Centro"},
+        "4": {"member": "Pallais", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Bajo"},
+        "5": {"member": "Kilary", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Piccolo segundo"},
+        "6": {"member": "Lourdes", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple segundo"},
+        "7": {"member": "Minely", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Bajo tenor"},
+        "8": {"member": "Christian", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Batería"},
+        "9": {"member": "Jefferson", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple segundo"},
+        "10": {"member": "Daniela", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple"}}
 
 def assign_random_members(available_members: dict) -> dict:
     """Asigna de manera completamente aleatoria a los miembros del grupo (For fun xdd).
@@ -41,7 +41,7 @@ def assign_random_members(available_members: dict) -> dict:
     """
     recommendations: dict = {position: "" for position in MANDATORY_POSITIONS}
 
-    for member in recommendations.values():
+    for _ in recommendations.values():
         random_mf: str = ""
 
         while True:
@@ -85,7 +85,7 @@ def recommend_member_for_position(available_members: dict, filled_positions: dic
             recommendations[details["main"]].append(details["member"])
 
         elif details["member"] not in recommendations[details["main"]] and len(recommendations[details["main"]]) >= 1:
-            print(f"El puesto {details["main"]} ya posee varias personas. Se asignará a {details["member"]} un puesto vacío al final.\n")
+            print(f"X El puesto {details["main"]} ya posee varias personas. Se asignará a {details["member"]} un puesto vacío al final.\n")
             pendingMembers.append(details)
             
     for details in pendingMembers:

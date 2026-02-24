@@ -1,11 +1,11 @@
-from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations
+from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations, assign_member_instrument_melody_from_csv
 from database.create_database import create_database
 from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position, assign_random_members
 import mariadb, os
 
 def main():
     cursor: mariadb.Cursor = get_connection()
-    
+
     while True:
 
         print("############################################")
@@ -13,7 +13,7 @@ def main():
         print("############################################")
 
         print("\n1. Opciones de administración")
-        print("2. Opciones de inserción")
+        print("2. Opciones de inserción y asignación")
         print("3. Opciones de consulta")
         print("4. Salir\n")
 
@@ -45,17 +45,18 @@ def main():
         elif choice == '2':
             while True:
 
-                print("#############################")
-                print("### Opciones de inserción ###")
-                print("#############################\n")
+                print("##########################################")
+                print("### Opciones de inserción y asignación ###")
+                print("##########################################\n")
 
                 print("\n1. Insertar un nuevo integrante")
                 print("2. Insertar un nuevo instrumento")
                 print("3. Insertar una nueva melodía")
                 print("4. Asignar un instrumento y una melodía a un integrante")
-                print("5. Volver al menú principal\n")
+                print("5. Asignar instrumentos y melodías a integrantes desde un CSV")
+                print("6. Volver al menú principal\n")
 
-                sub_choice: str = input("Selecciona una opción (1-5): ")
+                sub_choice: str = input("Selecciona una opción (1-6): ")
 
                 if sub_choice == '1':
                     name: str = input("Ingrese el nombre del integrante: ")
@@ -93,6 +94,15 @@ def main():
                     assign_instrument_member_melody(cursor, assignment_data)
 
                 elif sub_choice == '5':
+                    filename: str = input("Ingrese el nombre del archivo CSV (con extensión): ")
+
+                    try:
+                        assign_member_instrument_melody_from_csv(cursor, filename)
+
+                    except FileNotFoundError:
+                        print(f"El archivo {filename} no existe.\n")
+
+                elif sub_choice == '6':
                     break
 
         elif choice == '3':
@@ -107,9 +117,10 @@ def main():
                 print("2. Ver todos los instrumentos")
                 print("3. Ver todas las melodías")
                 print("4. Ver miembros que participan en una melodía específica")
-                print("5. Volver al menú principal\n")
+                print("5. Ver participaciones en todas las melodías")
+                print("6. Volver al menú principal\n")
 
-                sub_choice: str = input("Selecciona una opción (1-5): ")
+                sub_choice: str = input("Selecciona una opción (1-6): ")
 
                 if sub_choice == "1":
                     members = get_all_members(cursor)
@@ -171,7 +182,14 @@ def main():
                         recommendations = recommend_member_for_position(members_in_melody, filled_positions)
                         random_recommendations = assign_random_members(members_in_melody)
 
-                        print("\nRecomendaciones para cubrir puestos obligatorios:\n")
+                        print(f"\nPuestos cubiertos en la melodía {members_in_melody[1]['melody']}:\n")
+                        for position, assigned_members in filled_positions.items():
+                            if assigned_members:
+                                print(f"{position}: {', '.join(assigned_members)}")
+                            else:
+                                print(f"{position}: Ninguno")
+
+                        print(f"\nRecomendaciones para cubrir puestos obligatorios en la melodía {members_in_melody[1]['melody']}:\n")
                         for position, assigned_members in recommendations.items():
                             if assigned_members:
                                 print(f"{position}: {', '.join(assigned_members)}")
@@ -189,6 +207,64 @@ def main():
                         print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
 
                 elif sub_choice == "5":
+                    melodies = get_all_melodies(cursor)
+
+                    if not melodies:
+                        print("\nNo hay melodías registradas.\n")
+
+                    print("\nLista de Melodías:")
+
+                    for melody in melodies:
+                        print(f"ID: {melody[0]}, Nombre: {melody[1]}, Género: {melody[2]}")
+                        members_in_melody = get_members_by_melody(cursor, melody[0])
+                        all_members = get_all_members(cursor)
+
+                        try:
+                            if not members_in_melody:
+                                print(f"\nNo hay integrantes registrados para la melodía con ID {melody[0]}.\n")
+
+                            else:
+                                print(f"\nIntegrantes que participan en la melodía {members_in_melody[1]['melody']}:")
+
+                                for member_id, dmember_details in members_in_melody.items():
+                                    print(f"ID Integrante: {member_id}, Nombre: {dmember_details['member']}, Instrumento: {dmember_details['instrument']}, Puesto: {dmember_details['member_positions']}")
+                                print()
+
+                            for member in all_members:
+                                if member[0] not in members_in_melody:
+                                    members_in_melody[member[0]] = {"member": member[1], "main": member[2], "melody": None, "instrument": None, "member_positions": None}
+
+                            filled_positions = check_mandatory_positions_filled(members_in_melody)
+                            recommendations = recommend_member_for_position(members_in_melody, filled_positions)
+                            random_recommendations = assign_random_members(members_in_melody)
+
+                            print(f"\nPuestos cubiertos en la melodía {members_in_melody[1]['melody']}:\n")
+                            for position, assigned_members in filled_positions.items():
+                                if assigned_members:
+                                    print(f"{position}: {', '.join(assigned_members)}")
+                                else:
+                                    print(f"{position}: Ninguno")
+
+                            print(f"\nRecomendaciones para cubrir puestos obligatorios en la melodía {members_in_melody[1]['melody']}:\n")
+                            for position, assigned_members in recommendations.items():
+                                if assigned_members:
+                                    print(f"{position}: {', '.join(assigned_members)}")
+                                else:
+                                    print(f"{position}: Ninguno")
+
+                            print("\nAsignaciones aleatorias (For fun):\n")
+                            for position, assigned_members in random_recommendations.items():
+                                if assigned_members:
+                                    print(f"{position}: {assigned_members}")
+                                else:
+                                    print(f"{position}: Ninguno")
+
+                        except KeyError:
+                            print(f"\nNo hay integrantes registrados para la melodía con ID {melody[0]}.\n")
+                    print()
+                    break
+
+                elif sub_choice == "6":
                     print()
                     break
 

@@ -1,6 +1,16 @@
 # Module Imports
-import mariadb, sys, os
+import mariadb, sys, os, csv
 from dotenv import load_dotenv
+
+MANDATORY_POSITIONS = [
+    "Piccolo",
+    "Tiple",
+    "Centro",
+    "Bajo",
+    "Piccolo segundo",
+    "Tiple segundo", 
+    "Bajo tenor",
+    "Batería"]
 
 load_dotenv()
 
@@ -130,6 +140,32 @@ def get_all_members(cursor: mariadb.Cursor) -> list[tuple]:
     except mariadb.Error as e:
         print(f"Ocurrió un error al obtener los integrantes: {e}\n")
         return []
+    
+def assign_member_instrument_melody_from_csv(cursor: mariadb.Cursor, filename: str) -> None:
+    """Asignar un instrumento y una melodía a un integrante a partir de un CSV.
+
+    Args:
+        cursor (mariadb.Cursor): Cursor de la base de datos.
+        filename (str): Nombre del archivo CSV con los datos.
+
+
+    Returns:
+        None
+    """
+    try:
+        with open(filename, mode='r', encoding='utf-8') as file:
+            csvFile = csv.reader(file)
+            for lines in csvFile:
+                print(f"Procesando línea: {lines}\n")
+
+                for melody_id in lines[1].split(","):
+                    position = MANDATORY_POSITIONS[int(lines[3].split(",")[int(melody_id) - 1]) - 1]
+                    assign_instrument_member_melody(cursor, (lines[0], lines[2].split(",")[int(melody_id) - 1], melody_id, position))
+
+                print(f"Asignación realizada correctamente.\n")
+
+    except mariadb.Error as e:
+        print(f"Ocurrió un error al asignar el instrumento y la melodía: {e}\n")
 
 def get_all_instruments(cursor: mariadb.Cursor) -> list[tuple]:
     """Obtener todos los instrumentos de la base de datos.
