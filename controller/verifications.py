@@ -6,7 +6,7 @@ MANDATORY_POSITIONS = [
     "Centro",
     "Bajo",
     "Piccolo segundo",
-    "Tiple segundo", 
+    "Tiple segundo",
     "Bajo tenor",
     "Batería"]
 
@@ -19,7 +19,7 @@ SIMILAR_POSITIONS = {
 
 # Datos de prueba
 # Llena los puestos obligatorios y algunos substitutos
-test = {"1": {"member": "Dan", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple"}, 
+test = {"1": {"member": "Dan", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Tiple"},
         "2": {"member": "André", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Piccolo"},
         "3": {"member": "Tiffany", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Centro"},
         "4": {"member": "Pallais", "melody": "Verónica", "instrument": "Marimba 4/4", "main": "Bajo"},
@@ -65,7 +65,7 @@ def assign_random_members(available_members: dict) -> dict:
 
 def recommend_member_for_position(available_members: dict, filled_positions: dict) -> dict:
     """Recomienda un integrante disponible para un puesto obligatorio en una melodía específica.
-    
+
     Args:
         available_members (dict): Todos los miembros disponibles.
         filled_positions (dict): Puestos obligatorios ya ocupados en la melodía.
@@ -85,15 +85,18 @@ def recommend_member_for_position(available_members: dict, filled_positions: dic
             recommendations[details["main"]].append(details["member"])
 
         elif details["member"] not in recommendations[details["main"]] and len(recommendations[details["main"]]) >= 1:
-            print(f"X El puesto {details["main"]} ya posee varias personas. Se asignará a {details["member"]} un puesto vacío al final.\n")
+            print(f"X El puesto {details["main"]} ya posee varias personas. Se asignará a {details["member"]} un puesto vacío o válido al final\n")
             pendingMembers.append(details)
-            
+
     for details in pendingMembers:
         for position, value in recommendations.items():
             if not value:
                 print(f"- Se sugiere agregar a {details["member"]} al puesto {position}\n")
                 recommendations[position].append(details["member"])
                 break
+
+        print(f"- Dejar a {details["member"]} en su puesto principal {details["main"]}\n")
+        recommendations[details["main"]].append(details["member"])
 
     return recommendations
 

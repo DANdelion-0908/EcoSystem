@@ -1,4 +1,4 @@
-from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations, assign_member_instrument_melody_from_csv, insert_members_from_csv
+from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations, assign_member_instrument_melody_from_csv, insert_members_from_csv, get_melody_by_id
 from database.create_database import create_database
 from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position, assign_random_members
 import mariadb
@@ -174,48 +174,44 @@ def main():
                     members_in_melody = get_members_by_melody(cursor, melody_id)
                     all_members = get_all_members(cursor)
 
-                    try:
-                        if not members_in_melody:
-                            print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
+                    if not members_in_melody:
+                        print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}. Haciendo recomendaciones generales.\n")
 
+                    else:
+                        print(f"\nIntegrantes que participan en la melodía {get_melody_by_id(cursor, melody_id)['name']}:")
+
+                        for member_id, dmember_details in members_in_melody.items():
+                            print(f"ID Integrante: {member_id}, Nombre: {dmember_details['member']}, Instrumento: {dmember_details['instrument']}, Puesto: {dmember_details['member_positions']}")
+                        print()
+
+                    for member in all_members:
+                        if member[0] not in members_in_melody:
+                            members_in_melody[member[0]] = {"member": member[1], "main": member[2], "melody": None, "instrument": None, "member_positions": None}
+
+                    filled_positions = check_mandatory_positions_filled(members_in_melody)
+                    recommendations = recommend_member_for_position(members_in_melody, filled_positions)
+                    random_recommendations = assign_random_members(members_in_melody)
+
+                    print(f"\nPuestos cubiertos en la melodía {get_melody_by_id(cursor, melody_id)['name']}:\n")
+                    for position, assigned_members in filled_positions.items():
+                        if assigned_members:
+                            print(f"{position}: {', '.join(assigned_members)}")
                         else:
-                            print(f"\nIntegrantes que participan en la melodía {members_in_melody[1]['melody']}:")
+                            print(f"{position}: Ninguno")
 
-                            for member_id, dmember_details in members_in_melody.items():
-                                print(f"ID Integrante: {member_id}, Nombre: {dmember_details['member']}, Instrumento: {dmember_details['instrument']}, Puesto: {dmember_details['member_positions']}")
-                            print()
+                    print(f"\nRecomendaciones para cubrir puestos obligatorios en la melodía {get_melody_by_id(cursor, melody_id)['name']}:\n")
+                    for position, assigned_members in recommendations.items():
+                        if assigned_members:
+                            print(f"{position}: {', '.join(assigned_members)}")
+                        else:
+                            print(f"{position}: Ninguno")
 
-                        for member in all_members:
-                            if member[0] not in members_in_melody:
-                                members_in_melody[member[0]] = {"member": member[1], "main": member[2], "melody": None, "instrument": None, "member_positions": None}
-
-                        filled_positions = check_mandatory_positions_filled(members_in_melody)
-                        recommendations = recommend_member_for_position(members_in_melody, filled_positions)
-                        random_recommendations = assign_random_members(members_in_melody)
-
-                        print(f"\nPuestos cubiertos en la melodía {members_in_melody[1]['melody']}:\n")
-                        for position, assigned_members in filled_positions.items():
-                            if assigned_members:
-                                print(f"{position}: {', '.join(assigned_members)}")
-                            else:
-                                print(f"{position}: Ninguno")
-
-                        print(f"\nRecomendaciones para cubrir puestos obligatorios en la melodía {members_in_melody[1]['melody']}:\n")
-                        for position, assigned_members in recommendations.items():
-                            if assigned_members:
-                                print(f"{position}: {', '.join(assigned_members)}")
-                            else:
-                                print(f"{position}: Ninguno")
-
-                        print("\nAsignaciones aleatorias (For fun):\n")
-                        for position, assigned_members in random_recommendations.items():
-                            if assigned_members:
-                                print(f"{position}: {assigned_members}")
-                            else:
-                                print(f"{position}: Ninguno")
-
-                    except KeyError:
-                        print(f"\nNo hay integrantes registrados para la melodía con ID {melody_id}.\n")
+                    print("\nAsignaciones aleatorias (For fun):\n")
+                    for position, assigned_members in random_recommendations.items():
+                        if assigned_members:
+                            print(f"{position}: {assigned_members}")
+                        else:
+                            print(f"{position}: Ninguno")
 
                 elif sub_choice == "5":
                     melodies = get_all_melodies(cursor)

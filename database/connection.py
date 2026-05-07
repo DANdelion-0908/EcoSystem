@@ -129,7 +129,6 @@ def insert_members_from_csv(cursor: mariadb.Cursor, filename: str) -> None:
     except mariadb.Error as e:
         print(f"Ocurrió un error al insertar los miembros desde {filename}: {e}\n")
 
-
 def assign_instrument_member_melody(cursor: mariadb.Cursor, data: tuple[str, str, str, str]) -> None:
     """Asignar un instrumento y una melodía a un integrante.
 
@@ -276,6 +275,34 @@ def get_members_by_melody(cursor: mariadb.Cursor, melody_id: str) -> dict:
     except mariadb.Error as e:
         print(f"Ocurrió un error al obtener las relaciones: {e}\n")
         return {}
+
+def get_melody_by_id(cursor: mariadb.Cursor, melody_id: str) -> dict:
+    """Obtener una melodía por su ID.
+
+    Args:
+        cursor (mariadb.Cursor): Cursor de la base de datos.
+        melody_id (str): ID de la melodía.
+
+    Returns:
+        dict: Diccionario con los datos de la melodía.
+    """
+    try:
+        cursor.execute("SELECT * FROM melody WHERE id = ?", (melody_id,))
+        melody = cursor.fetchone()
+
+        if not melody:
+            return {}
+
+        return {
+            "id": melody[0],
+            "name": melody[1],
+            "genre": melody[2]
+        }
+
+    except mariadb.Error as e:
+        print(f"Ocurrió un error al obtener la melodía: {e}\n")
+        return {}
+
 
 def delete_relations(cursor: mariadb.Cursor) -> None:
     """Eliminar todas las relaciones de la tabla member_instrument_melody.
