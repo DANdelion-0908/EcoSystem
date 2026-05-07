@@ -1,5 +1,8 @@
 # Module Imports
-import mariadb, sys, os, csv
+import mariadb
+import sys
+import os
+import csv
 from dotenv import load_dotenv
 
 MANDATORY_POSITIONS = [
@@ -8,7 +11,7 @@ MANDATORY_POSITIONS = [
     "Centro",
     "Bajo",
     "Piccolo segundo",
-    "Tiple segundo", 
+    "Tiple segundo",
     "Bajo tenor",
     "Batería"]
 
@@ -16,7 +19,7 @@ load_dotenv()
 
 def get_connection() -> mariadb.Cursor:
     """Establecer conexión a la base de datos de Ecos del Valle.
-    
+
     Returns:
         cur (mariadb.Cursor): Cursor de la base de datos.
     """
@@ -43,7 +46,7 @@ def get_connection() -> mariadb.Cursor:
 
 def insert_member(cursor: mariadb.Cursor, data: tuple) -> None:
     """Insertar datos en la tabla member.
-    
+
     Args:
         cursor (mariadb.Cursor): Cursor de la base de datos.
         data (tuple): Datos a insertar.
@@ -55,7 +58,7 @@ def insert_member(cursor: mariadb.Cursor, data: tuple) -> None:
         cursor.execute(
             "INSERT INTO member (name, main_position, role) VALUES (?, ?, ?)", (data[0], data[1], data[2])
         )
-    
+
         print(f"Integrante {data[0]} agregado correctamente.\n")
 
     except mariadb.Error as e:
@@ -103,12 +106,36 @@ def insert_melody(cursor: mariadb.Cursor, data: tuple) -> None:
     except mariadb.Error as e:
         print(f"Ocurrió un error al insertar la melodía: {e}\n")
 
-def assign_instrument_member_melody(cursor: mariadb.Cursor, data: tuple) -> None:
+def insert_members_from_csv(cursor: mariadb.Cursor, filename: str) -> None:
+    """Insertar datos de miembros desde un archivo CSV.
+
+    Args:
+        cursor (mariadb.Cursor): Cursor de la base de datos.
+        filename (str): Nombre del archivo CSV.
+
+    Returns:
+        None
+    """
+    try:
+        with open(filename, 'r') as file:
+            reader = csv.reader(file)
+            for row in reader:
+                print(f"Procesando línea: {row}")
+
+                insert_member(cursor, tuple(row))
+
+        print(f"Miembros insertados correctamente desde {filename}.\n")
+
+    except mariadb.Error as e:
+        print(f"Ocurrió un error al insertar los miembros desde {filename}: {e}\n")
+
+
+def assign_instrument_member_melody(cursor: mariadb.Cursor, data: tuple[str, str, str, str]) -> None:
     """Asignar un instrumento y una melodía a un integrante.
 
     Args:
         cursor (mariadb.Cursor): Cursor de la base de datos.
-        data (tuple): Datos a insertar.
+        data (tuple): Datos a insertar que contienen (member_id, instrument_id, melody_id, member_positions).
 
     Returns:
         None
@@ -140,7 +167,7 @@ def get_all_members(cursor: mariadb.Cursor) -> list[tuple]:
     except mariadb.Error as e:
         print(f"Ocurrió un error al obtener los integrantes: {e}\n")
         return []
-    
+
 def assign_member_instrument_melody_from_csv(cursor: mariadb.Cursor, filename: str) -> None:
     """Asignar un instrumento y una melodía a un integrante a partir de un CSV.
 
@@ -162,7 +189,7 @@ def assign_member_instrument_melody_from_csv(cursor: mariadb.Cursor, filename: s
                     position = MANDATORY_POSITIONS[int(lines[3].split(",")[int(melody_id) - 1]) - 1]
                     assign_instrument_member_melody(cursor, (lines[0], lines[2].split(",")[int(melody_id) - 1], melody_id, position))
 
-                print(f"Asignación realizada correctamente.\n")
+                print("Asignación realizada correctamente.\n")
 
     except mariadb.Error as e:
         print(f"Ocurrió un error al asignar el instrumento y la melodía: {e}\n")
@@ -219,17 +246,17 @@ def get_members_by_melody(cursor: mariadb.Cursor, melody_id: str) -> dict:
         dict: Diccionario con los datos de las relaciones.
     """
     try:
-        cursor.execute(f"""
+        cursor.execute("""
             SELECT m.id AS member_id,
-                m.name AS member, 
+                m.name AS member,
                 m.main_position AS main,
-                mel.name AS melody, 
-                ins.name AS instrument, 
-                mim.member_positions 
-            FROM member_instrument_melody mim 
-            JOIN member m ON mim.member_id = m.id JOIN 
-            instrument ins ON mim.instrument_id = ins.id JOIN 
-            melody mel ON mim.melody_id = mel.id 
+                mel.name AS melody,
+                ins.name AS instrument,
+                mim.member_positions
+            FROM member_instrument_melody mim
+            JOIN member m ON mim.member_id = m.id JOIN
+            instrument ins ON mim.instrument_id = ins.id JOIN
+            melody mel ON mim.melody_id = mel.id
             WHERE mel.id = ?;
         """, (melody_id,))
 
@@ -243,7 +270,7 @@ def get_members_by_melody(cursor: mariadb.Cursor, melody_id: str) -> dict:
                 "main": main,
                 "member_positions": member_positions
             }
-        
+
         return relations
 
     except mariadb.Error as e:

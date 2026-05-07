@@ -1,7 +1,8 @@
-from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations, assign_member_instrument_melody_from_csv
+from database.connection import get_connection, insert_member, insert_instrument, insert_melody, assign_instrument_member_melody, get_all_members, get_all_instruments, get_all_melodies, get_members_by_melody, delete_relations, assign_member_instrument_melody_from_csv, insert_members_from_csv
 from database.create_database import create_database
 from controller.verifications import check_mandatory_positions_filled, recommend_member_for_position, assign_random_members
-import mariadb, os
+import mariadb
+import os
 
 def main():
     cursor: mariadb.Cursor = get_connection()
@@ -52,57 +53,67 @@ def main():
                 print("\n1. Insertar un nuevo integrante")
                 print("2. Insertar un nuevo instrumento")
                 print("3. Insertar una nueva melodía")
-                print("4. Asignar un instrumento y una melodía a un integrante")
-                print("5. Asignar instrumentos y melodías a integrantes desde un CSV")
-                print("6. Volver al menú principal\n")
+                print("4. Insertar integrantes desde un CSV")
+                print("5. Asignar un instrumento y una melodía a un integrante")
+                print("6. Asignar instrumentos y melodías a integrantes desde un CSV")
+                print("7. Volver al menú principal\n")
 
-                sub_choice: str = input("Selecciona una opción (1-6): ")
+                insert_assign_choice: str = input("Selecciona una opción (1-7): ")
 
-                if sub_choice == '1':
-                    name: str = input("Ingrese el nombre del integrante: ")
+                if insert_assign_choice == '1':
+                    member_name: str = input("Ingrese el nombre del integrante: ")
                     main_position: str = input("Ingrese el puesto principal del integrante: ")
                     role: str = input("Ingrese el rol del integrante: ")
                     print()
 
-                    member_data: tuple[str, str, str] = (name, main_position, role)
+                    member_data: tuple[str, str, str] = (member_name, main_position, role)
                     insert_member(cursor, member_data)
 
-                elif sub_choice == '2':
-                    name: str = input("Ingrese el nombre del instrumento: ")
+                elif insert_assign_choice == '2':
+                    instrument_name: str = input("Ingrese el nombre del instrumento: ")
                     family: str = input("Ingrese la familia del instrumento: ")
                     print()
 
-                    instrument_data: tuple[str, str] = (name, family)
+                    instrument_data: tuple[str, str] = (instrument_name, family)
                     insert_instrument(cursor, instrument_data)
 
-                elif sub_choice == '3':        
-                    name: str = input("Ingrese el título de la melodía: ")
+                elif insert_assign_choice == '3':
+                    melody_name: str = input("Ingrese el título de la melodía: ")
                     genre: str = input("Ingrese el género de la melodía: ")
                     print()
 
-                    melody_data: tuple[str, str] = (name, genre)
+                    melody_data: tuple[str, str] = (melody_name, genre)
                     insert_melody(cursor, melody_data)
 
-                elif sub_choice == '4':
+                elif insert_assign_choice == '4':
+                    members_filename: str = input("Ingrese el nombre del archivo CSV (sin extensión): ")
+
+                    try:
+                        insert_members_from_csv(cursor, members_filename + ".csv")
+
+                    except FileNotFoundError:
+                        print(f"El archivo {members_filename} no existe.\n")
+
+                elif insert_assign_choice == '5':
                     member_id: str = input("Ingrese el ID del integrante: ")
                     instrument_id: str = input("Ingrese el ID del instrumento: ")
-                    melody_id: str = input("Ingrese el ID de la melodía: ")
+                    search_melody_id: str = input("Ingrese el ID de la melodía: ")
                     member_position: str = input("Ingrese el puesto del integrante en la melodía: ")
                     print()
 
-                    assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, melody_id, member_position)
+                    assignment_data: tuple[str, str, str, str] = (member_id, instrument_id, search_melody_id, member_position)
                     assign_instrument_member_melody(cursor, assignment_data)
 
-                elif sub_choice == '5':
-                    filename: str = input("Ingrese el nombre del archivo CSV (con extensión): ")
+                elif insert_assign_choice == '6':
+                    filename: str = input("Ingrese el nombre del archivo CSV (sin extensión): ")
 
                     try:
-                        assign_member_instrument_melody_from_csv(cursor, filename)
+                        assign_member_instrument_melody_from_csv(cursor, filename + ".csv")
 
                     except FileNotFoundError:
                         print(f"El archivo {filename} no existe.\n")
 
-                elif sub_choice == '6':
+                elif insert_assign_choice == '7':
                     break
 
         elif choice == '3':
@@ -127,9 +138,9 @@ def main():
 
                     if not members:
                         print("\nNo hay integrantes registrados.\n")
-                    
+
                     print("\nLista de Integrantes:")
-                    
+
                     for member in members:
                         print(f"ID: {member[0]}, Nombre: {member[1]}, Puesto Principal: {member[2]}, Rol: {member[3]}")
                     print()
