@@ -12,6 +12,9 @@ Programa que busca mejorar la gestión del grupo marimbístico Ecos del Valle.
 - [ ] Ver puestos asignados y conocidos por integrante y melodía.
 - [ ] Seleccionar grupo de canciones y personas para, según puestos asignados, elegir la mejor distribución posible para asignar la misma cantidad de descansos a cada integrante.
 
+<img width="703" height="577" alt="image" src="https://github.com/user-attachments/assets/638ffbde-fa83-4096-9719-5e96e1acf831" />
+
+
 ### To-Do-Later
 
 - [X] Mover las consultas y funciones de Main a su propio archivo Controller. 
