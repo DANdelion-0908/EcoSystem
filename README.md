@@ -8,9 +8,12 @@ Programa que busca mejorar la gestión del grupo marimbístico Ecos del Valle.
 
 - [X] Mostrar los puestos no tomados de una melodía y los integrantes disponibles.
 - [X] Dar información sobre integrantes, instrumentos y melodías.
-- [ ] Seleccionar melodías y puestos aleatoriamente.
+- [X] Seleccionar melodías y puestos aleatoriamente.
+- [ ] Ver puestos asignados y conocidos por integrante y melodía.
+- [ ] Seleccionar grupo de canciones y personas para, según puestos asignados, elegir la mejor distribución posible para asignar la misma cantidad de descansos a cada integrante.
 
 ### To-Do-Later
 
-- [ ] Mover las consultas y funciones de Main a su propio archivo Controller.
+- [X] Mover las consultas y funciones de Main a su propio archivo Controller. 
+- [ ] Interfaz gráfica (GUI/TUI).
 - [ ] Permitir su uso a través de internet de manera remota.

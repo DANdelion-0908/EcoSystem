@@ -9,7 +9,8 @@ def create_database():
                     id INT PRIMARY KEY AUTO_INCREMENT,
                     name VARCHAR(100) NOT NULL,
                     main_position VARCHAR(100) NOT NULL,
-                    role VARCHAR(100) NOT NULL);"""
+                    role VARCHAR(100) NOT NULL,
+                    general_position VARCHAR(100) NOT NULL);"""
                 )
 
     cur.execute("""CREATE TABLE IF NOT EXISTS instrument(
@@ -21,7 +22,8 @@ def create_database():
     cur.execute("""CREATE TABLE IF NOT EXISTS melody(
                 id INT PRIMARY KEY AUTO_INCREMENT,
                 name VARCHAR(100) NOT NULL,
-                genre VARCHAR(100) NOT NULL);"""
+                genre VARCHAR(100) NOT NULL,
+                composer VARCHAR(100) NOT NULL);"""
             )
 
     cur.execute("""CREATE TABLE IF NOT EXISTS member_instrument_melody(
