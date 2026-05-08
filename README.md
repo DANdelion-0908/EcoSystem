@@ -14,7 +14,6 @@ Programa que busca mejorar la gestión del grupo marimbístico Ecos del Valle.
 
 <img width="703" height="577" alt="image" src="https://github.com/user-attachments/assets/638ffbde-fa83-4096-9719-5e96e1acf831" />
 
-
 ### To-Do-Later
 
 - [X] Mover las consultas y funciones de Main a su propio archivo Controller. 
